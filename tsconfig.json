@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "strict": true,
+    "target": "ES6",
+    "allowJs": true
+  },
+  "include": ["src/**/*.ts"]
+}
