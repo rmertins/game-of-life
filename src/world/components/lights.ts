@@ -13,10 +13,11 @@ class TickableDirectionalLight extends DirectionalLight implements Tickable {
 }
 
 function createLights(): { light: TickableDirectionalLight; ambientLight: HemisphereLight } {
-    const ambientLight = new HemisphereLight('white', 'darkslategrey', 0.05);
+    const ambientLight = new HemisphereLight('white', 'darkslategrey', 1.0);
 
-    const light = new TickableDirectionalLight('white', 0.7);
-    light.position.set(0, 10, 0);
+    const light = new TickableDirectionalLight('white', 1.0);
+    light.position.set(0, 2, 0);
+    light.lookAt(0, 0, 0);
 
     return { ambientLight, light };
 }

@@ -41,7 +41,7 @@ class World {
             "x = 9, y = 9, rule = B3/S23\n" +
             "b2o6b$o8b$bo3bo3b$bo3b2o2b$3bobo3b$2b2o3bob$3bo3bob$8bo$6b2o!");
         // gol = new GOL(pattern.columns, pattern.rows);
-        gol = new GOL(100, 100);
+        gol = new GOL(50, 50);
         // gol = new GOL(50, 50);
         // let seeds = [        // blinker
         //     new Vector2(3,2),
@@ -55,34 +55,34 @@ class World {
         //     new Vector2(4,2),
         //     new Vector2(4,3)
         // ];
-        // let seeds = [           // F-Pentomino
-        //     new Vector2(23,24),
-        //     new Vector2(23,25),
-        //     new Vector2(24,23),
-        //     new Vector2(24,24),
-        //     new Vector2(25,24)
-        // ];
-        let seeds = [        // double brackets
-            new Vector2(0, 0),
-            new Vector2(1, 0),
-            new Vector2(2, 0),
-
-            new Vector2(0, 1),
-            new Vector2(2, 1),
-            new Vector2(0, 2),
-            new Vector2(2, 2),
-
-            new Vector2(0, 4),
-            new Vector2(2, 4),
-            new Vector2(0, 5),
-            new Vector2(2, 5),
-
-            new Vector2(0, 6),
-            new Vector2(1, 6),
-            new Vector2(2, 6)
+        let seeds = [           // F-Pentomino
+            new Vector2(0,1),
+            new Vector2(0,2),
+            new Vector2(1,0),
+            new Vector2(1,1),
+            new Vector2(2,1)
         ];
-        gol.seed(pattern.seed);
-        // gol.seed(seeds);
+        // let seeds = [        // double brackets
+        //     new Vector2(0, 0),
+        //     new Vector2(1, 0),
+        //     new Vector2(2, 0),
+        //
+        //     new Vector2(0, 1),
+        //     new Vector2(2, 1),
+        //     new Vector2(0, 2),
+        //     new Vector2(2, 2),
+        //
+        //     new Vector2(0, 4),
+        //     new Vector2(2, 4),
+        //     new Vector2(0, 5),
+        //     new Vector2(2, 5),
+        //
+        //     new Vector2(0, 6),
+        //     new Vector2(1, 6),
+        //     new Vector2(2, 6)
+        // ];
+        // gol.seed(pattern.seed);
+        gol.seed(seeds);
         golVis = new GOLVisualization(gol, settings);
         golVis.position.set(-12, 0, -12);
         settings.addResetSupporter(golVis);
@@ -112,6 +112,7 @@ class World {
     }
 
     async init() {
+        await golVis.init();
     }
 
     start() {
