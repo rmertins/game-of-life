@@ -1,19 +1,20 @@
 import {
     BoxBufferGeometry,
-    BufferGeometry,
+    BufferGeometry, Euler,
     Group,
-    Material,
+    Material, Matrix4,
     Mesh,
     MeshBasicMaterial,
     MeshPhongMaterial,
-    Object3D,
-    Vector2
+    Object3D, Quaternion,
+    Vector2, Vector3
 } from "three";
 import {GOL} from "../gol/GOL";
 import {Tickable} from "../systems/Loop";
 import {OffsetSupport, ResetSupport, Settings} from "../Settings";
 import {GOLVisCell} from "./GOLVisCell";
 import {GLTF, GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
+import {GOLVisFloor} from "./GOLVisFloor";
 
 class GOLVisualization extends Group implements Tickable, ResetSupport, OffsetSupport {
     private delay: number = 0.1;
@@ -27,8 +28,10 @@ class GOLVisualization extends Group implements Tickable, ResetSupport, OffsetSu
     private readonly materialAlive: Material;
     private cells: GOLVisCell[][] = [];
     private settings: Settings;
-    private floor?: Object3D;
-    private headCrab?: Object3D;
+    private floor?: Mesh;
+    private headCrab?: Mesh;
+    private golVisFloor?: GOLVisFloor;
+
 
     constructor(population: GOL, settings: Settings) {
         super();
@@ -68,21 +71,19 @@ class GOLVisualization extends Group implements Tickable, ResetSupport, OffsetSu
         this.floor = GOLVisualization.setupModel(floorData);
         this.headCrab = GOLVisualization.setupModel(headCrabData);
 
-        console.log(this.floor);
+        // console.log(this.floor);
 
         this.cells = this.initCells();
     }
 
-    private static setupModel(gltf: GLTF): Object3D {
-        // gltf.scene.traverseAncestors(function (object) {
-        //     if (object instanceof Mesh) {
-        //         return object as Mesh;
-        //     }
-        // })
-        // return undefined;
-        let obj3D: Object3D = gltf.scene.children[0];
-        obj3D.position.set(0, 0, 0);
-        return obj3D;
+    private static setupModel(gltf: GLTF): Mesh | undefined {
+        let mesh: Mesh | undefined = undefined;
+        gltf.scene.traverse(function (object) {
+            if (object instanceof Mesh) {
+                mesh = object as Mesh;
+            }
+        });
+        return mesh;
     }
 
     updateOffset(offset: Vector2): void {
@@ -108,22 +109,35 @@ class GOLVisualization extends Group implements Tickable, ResetSupport, OffsetSu
 
     private initCells(): GOLVisCell[][] {
         let cells: GOLVisCell[][] = [];
+        if (this.floor !== undefined) {
+            this.golVisFloor = new GOLVisFloor(this.floor, this.population.rows * this.population.columns);
+        }
+        let i = 0;
         for (let y = 0; y < this.population.rows; y++) {
             cells[y] = [];
             for (let x = 0; x < this.population.columns; x++) {
                 // cells[y][x] = new Mesh(geometry, this.getCellMaterial(y, x));
                 cells[y][x] = new GOLVisCell(
                     this.cellScale,
-                    this.floor?.clone(true),
                     this.headCrab?.clone(true)
                 );
                 cells[y][x].update(this.population.isCellAlive(y, x))
-                cells[y][x].position.set(
-                    this.length * x + this.padding * x,
-                    0.1,
-                    this.length * y + this.padding * y);
+                const xPos = this.length * x + this.padding * x;
+                const yPos = 0.1;
+                const zPos = this.length * y + this.padding * y;
+                if (this.golVisFloor !== undefined) {
+                    const matrix = GOLVisualization.updateFloorMatrix(xPos, yPos, zPos);
+                    this.golVisFloor.setMatrixAt(i, matrix);
+                }
+                cells[y][x].position.set(xPos, yPos, zPos);
                 this.add(cells[y][x]);
+                i++;
             }
+        }
+        if (this.golVisFloor !== undefined) {
+            console.log(this.golVisFloor);
+            this.golVisFloor.updateMatrix();
+            this.add(this.golVisFloor);
         }
         return cells;
     }
@@ -142,6 +156,17 @@ class GOLVisualization extends Group implements Tickable, ResetSupport, OffsetSu
                 this.cells[y][x].update(this.population.isCellAlive(y, x));
             }
         }
+    }
+
+    private static updateFloorMatrix(x: number, y: number, z: number): Matrix4 {
+        let matrix = new Matrix4();
+        let position = new Vector3(x, y, z);
+        let rotation = new Euler(0,0,0);
+        let quaternion = new Quaternion(0,0,0, 0);
+        quaternion.setFromEuler(rotation, true);
+        let scale = new Vector3(0,0,0);
+        matrix.compose(position, quaternion, scale);
+        return matrix;
     }
 }
 

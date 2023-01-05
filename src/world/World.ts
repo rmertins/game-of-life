@@ -41,7 +41,7 @@ class World {
             "x = 9, y = 9, rule = B3/S23\n" +
             "b2o6b$o8b$bo3bo3b$bo3b2o2b$3bobo3b$2b2o3bob$3bo3bob$8bo$6b2o!");
         // gol = new GOL(pattern.columns, pattern.rows);
-        gol = new GOL(50, 50);
+        gol = new GOL(5, 5);
         // gol = new GOL(50, 50);
         // let seeds = [        // blinker
         //     new Vector2(3,2),
@@ -108,7 +108,6 @@ class World {
         }*/
 
         const resizer = new Resizer(container, camera, renderer);
-
     }
 
     async init() {
