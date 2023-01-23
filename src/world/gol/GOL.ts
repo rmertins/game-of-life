@@ -62,6 +62,7 @@ class GOL implements Tickable {
      * x| |
      *
      * pos = 2,0
+     * todo: refactor only watch edges and use edge case accessible fields
      * @param position
      */
     public aliveNeighbours(position: Vector2): number {

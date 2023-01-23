@@ -1,4 +1,4 @@
-import {MathUtils, Scene, TextureLoader, Vector2, WebGLRenderer} from "three";
+import {Scene, TextureLoader, Vector2, WebGLRenderer} from "three";
 import {createCamera, TickablePerspectiveCamera} from "./components/camera";
 import {createScene} from "./components/scene";
 import {createRenderer} from "./systems/renderer";
@@ -13,18 +13,60 @@ import {Settings} from "./Settings";
 import {MyGui} from "./components/MyGui";
 import {RLEPattern} from "./gol/RLEPattern";
 
+/**
+ * handles texture loading
+ */
 let textureLoader: TextureLoader;
+
+/**
+ * the world camery
+ */
 let camera: TickablePerspectiveCamera;
+
+/**
+ * root scene
+ */
 let scene: Scene;
+
+/**
+ * renderer
+ */
 let renderer: WebGLRenderer;
+
+/**
+ * animation loop
+ */
 let loop: Loop;
+
+/**
+ * active controls
+ */
 let controls: TickableOrbitControls;
+
+/**
+ * the game of life engine
+ */
 let gol: GOL;
+
+/**
+ * the game of life visualization
+ */
 let golVis: GOLVisualization;
+
+/**
+ * settings
+ */
 let settings: Settings = new Settings();
+
+/**
+ * quick settings menu
+ */
 let myGUI: MyGui;
 
-class World {
+/**
+ * The wohle world handles everything
+ */
+export class World {
     constructor(container: HTMLElement) {
         textureLoader = new TextureLoader();
         camera = createCamera(settings);
@@ -41,7 +83,7 @@ class World {
             "x = 9, y = 9, rule = B3/S23\n" +
             "b2o6b$o8b$bo3bo3b$bo3b2o2b$3bobo3b$2b2o3bob$3bo3bob$8bo$6b2o!");
         // gol = new GOL(pattern.columns, pattern.rows);
-        gol = new GOL(5, 5);
+        gol = new GOL(20, 20);
         // gol = new GOL(50, 50);
         // let seeds = [        // blinker
         //     new Vector2(3,2),
@@ -56,11 +98,11 @@ class World {
         //     new Vector2(4,3)
         // ];
         let seeds = [           // F-Pentomino
-            new Vector2(0,1),
-            new Vector2(0,2),
-            new Vector2(1,0),
-            new Vector2(1,1),
-            new Vector2(2,1)
+            new Vector2(0, 1),
+            new Vector2(0, 2),
+            new Vector2(1, 0),
+            new Vector2(1, 1),
+            new Vector2(2, 1)
         ];
         // let seeds = [        // double brackets
         //     new Vector2(0, 0),
@@ -84,11 +126,12 @@ class World {
         // gol.seed(pattern.seed);
         gol.seed(seeds);
         golVis = new GOLVisualization(gol, settings);
-        golVis.position.set(-12, 0, -12);
+        // todo: should calculate the offset to place the board in center
+        golVis.position.set(-1, 0, -1);
         settings.addResetSupporter(golVis);
         settings.addOffsetSupporter(golVis);
 
-        const { light, ambientLight } = createLights();
+        const {light, ambientLight} = createLights();
 
         loop.updatables.push(controls, camera, light, golVis);
         scene.add(light, ambientLight, createGridHelper(), createAxesHelper(), golVis);
@@ -110,21 +153,24 @@ class World {
         const resizer = new Resizer(container, camera, renderer);
     }
 
+    /**
+     * handles recursive async loads like models and textures
+     */
     async init() {
         await golVis.init();
     }
 
+    /**
+     * start the animation loop
+     */
     start() {
         loop.start();
     }
 
+    /**
+     * stop the animation loop
+     */
     stop() {
         loop.stop();
     }
-
-    newGeneration() {
-        gol.tick(0);
-    }
 }
-
-export { World }

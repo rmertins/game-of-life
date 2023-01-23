@@ -2,20 +2,28 @@ import {PerspectiveCamera, Vector3} from "three";
 import {Tickable} from "../systems/Loop";
 import {Settings} from "../Settings";
 
-const movePerSecond = 1;
+/**
+ * Perspective camera using animation loop Tickable interface
+ */
+export class TickablePerspectiveCamera extends PerspectiveCamera implements Tickable {
 
-class TickablePerspectiveCamera extends PerspectiveCamera implements Tickable {
+    /**
+     * updates the matrix
+     * @param delta
+     */
     tick(delta: number): void {
-        // this.zoom += movePerSecond * delta;
         this.updateProjectionMatrix();
         this.updateMatrix();
-        // this.lookAt(new Vector3(0, 0, 5));
-        // console.log(this.zoom);
     }
 
 }
 
-function createCamera(settings: Settings): TickablePerspectiveCamera {
+/**
+ * creates a new camery instance using settings
+ * places the camera on settings cam position
+ * @param settings
+ */
+export function createCamera(settings: Settings): TickablePerspectiveCamera {
     const camera = new TickablePerspectiveCamera(
         settings.fov,
         settings.aspect,
@@ -26,5 +34,3 @@ function createCamera(settings: Settings): TickablePerspectiveCamera {
     camera.position.set(settings.camX, settings.camY, settings.camZ);
     return camera;
 }
-
-export { createCamera, TickablePerspectiveCamera };

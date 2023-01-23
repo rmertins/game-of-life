@@ -2,49 +2,115 @@ import {Vector2} from "three";
 import {RLEPattern} from "./gol/RLEPattern";
 
 let resetSupporters: ResetSupport[] = [];
-let offsetSupportes: OffsetSupport[] = [];
+let offsetSupporters: OffsetSupport[] = [];
 
-class Settings {
-    // GOL Settings
+/**
+ * global game settings
+ */
+export class Settings {
+    /**
+     * flag indicating running simulation
+     */
     public running: boolean = false;
+
+    /**
+     * reset the game
+     */
     public reset = function () {
         console.log("RESET!!!");
         for (let i = 0; i < resetSupporters.length; i++) {
             resetSupporters[i].reset();
         }
     }
+
+    /**
+     * pattern x offset
+     */
     public xOffset: number = 0;
+
+    /**
+     * pattern y offset
+     */
     public yOffset: number = 0;
 
+    /**
+     * RLE pattern files in assets
+     */
     public patterns: string[] = [
         "assets/patterns/boat.rle",
         "assets/patterns/cross.rle",
         "assets/patterns/herschel_climber.rle",
         "assets/patterns/z-petomino.rle"
     ]
+
+    /**
+     * active selected pattern
+     */
     public currentPattern: string = this.patterns[0];
 
-    public fov: number = 35;
+    /**
+     * camera field of view
+     */
+    public fov: number = 15;
+
+    /**
+     * camera aspect ratio
+     */
     public aspect: number = 1;
+
+    /**
+     * camera min near distance to see
+     */
     public near: number = 0.1;
-    public far: number = 100;
+
+    /**
+     * camera max far distance to see
+     */
+    public far: number = 10;
+
+    /**
+     * camera position x
+     */
     public camX: number = 0;
-    public camY: number = 60;
+
+    /**
+     * camera position y
+     */
+    public camY: number = 4;
+
+    /**
+     * camera position z
+     */
     public camZ: number = 0;
 
 
+    /**
+     * add a reset supporter
+     * @param supporter
+     */
     public addResetSupporter(supporter: ResetSupport): void {
         resetSupporters.push(supporter)
     }
 
+    /**
+     * add an offset supporter
+     * @param supporter
+     */
     public addOffsetSupporter(supporter: OffsetSupport): void {
-        offsetSupportes.push(supporter);
+        offsetSupporters.push(supporter);
     }
 
+    /**
+     * updates all offset supporters with new offset
+     */
     public updateOffset(): void {
-        offsetSupportes.forEach(value => value.updateOffset(new Vector2(this.xOffset, this.yOffset)));
+        offsetSupporters.forEach(value => value.updateOffset(new Vector2(this.xOffset, this.yOffset)));
     }
 
+    /**
+     * loads asset selected RLE pattern file and prints the pattern to console
+     * todo: make it usable
+     */
     public updatePattern() {
         fetch(this.currentPattern)
             .then(
@@ -57,12 +123,16 @@ class Settings {
     }
 }
 
-interface ResetSupport {
+/**
+ * Reset support
+ */
+export interface ResetSupport {
     reset(): void;
 }
 
-interface OffsetSupport {
+/**
+ * Offset support
+ */
+export interface OffsetSupport {
     updateOffset(offset: Vector2): void;
 }
-
-export { Settings, ResetSupport, OffsetSupport };
