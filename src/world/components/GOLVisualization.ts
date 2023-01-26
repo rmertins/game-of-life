@@ -1,4 +1,15 @@
-import {Euler, Group, Material, Matrix4, Mesh, MeshBasicMaterial, Quaternion, Vector2, Vector3} from "three";
+import {
+    Box3Helper, BoxHelper,
+    Euler,
+    Group,
+    Material,
+    Matrix4,
+    Mesh,
+    MeshBasicMaterial,
+    Quaternion,
+    Vector2,
+    Vector3
+} from "three";
 import {GOL} from "../gol/GOL";
 import {Tickable} from "../systems/Loop";
 import {OffsetSupport, ResetSupport, Settings} from "../Settings";
@@ -9,7 +20,8 @@ import {GOLVisFloor} from "./GOLVisFloor";
 export class GOLVisualization extends Group implements Tickable, ResetSupport, OffsetSupport {
     private delay: number = 0.1;
     private pastTime: number = 0;
-    private length: number = 0.1;
+    // private length: number = 0.1;
+    // todo: add setting for padding
     private padding: number = 0.0;
     private population: GOL;
     private cells: GOLVisCell[][] = [];
@@ -17,7 +29,6 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
     private floor?: Mesh;
     private headCrab?: Mesh;
     private golVisFloor?: GOLVisFloor;
-
 
     constructor(population: GOL, settings: Settings) {
         super();
@@ -71,9 +82,14 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
         this.updateCells();
     }
 
-    public reset() {
-        this.population.reset();
-        this.updateCells();
+    public reset(columns?: number, rows?: number) {
+        this.population.reset(columns, rows);
+        if (columns === undefined && rows === undefined) {
+            this.updateCells();
+        } else {
+            this.clearAll();
+            this.cells = this.initCells();
+        }
     }
 
     tick(delta: number): void {
@@ -93,16 +109,17 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
             this.golVisFloor = new GOLVisFloor(this.floor, this.population.rows * this.population.columns);
         }
 
-        const floorScale = this.length / this.floor?.userData['size'].x;
-        const headCrabScale = this.length / this.headCrab?.userData['size'].y;
+        const floorScale = this.settings.cellLength / this.floor?.userData['size'].x;
+        const headCrabScale = this.settings.cellLength / this.headCrab?.userData['size'].y;
+        // this.headCrab?.scale.set(headCrabScale, headCrabScale, headCrabScale);
 
         let i = 0;
         for (let y = 0; y < this.population.rows; y++) {
             cells[y] = [];
             for (let x = 0; x < this.population.columns; x++) {
-                const xPos = this.length * x + this.padding * x;
+                const xPos = this.settings.cellLength * x + this.padding * x;
                 const yPos = 0.1;
-                const zPos = this.length * y + this.padding * y;
+                const zPos = this.settings.cellLength * y + this.padding * y;
 
                 cells[y][x] = new GOLVisCell(
                     headCrabScale,
@@ -116,8 +133,11 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
                 }
 
                 cells[y][x].position.set(xPos, yPos, zPos);
+                // todo: add setting to switch box helper on/off
+                // const boxHelper = new BoxHelper(cells[y][x], 0xff0000);
 
                 this.add(cells[y][x]);
+                // this.add(boxHelper);
                 i++;
             }
         }
@@ -141,11 +161,22 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
     private static updateFloorMatrix(x: number, y: number, z: number, scaleVal: number): Matrix4 {
         let matrix = new Matrix4();
         let position = new Vector3(x, y, z);
-        let rotation = new Euler((Math.PI/2)*-1,0,0);
-        let quaternion = new Quaternion(0,0,0, 0);
+        let rotation = new Euler((Math.PI / 2) * -1, 0, 0);
+        let quaternion = new Quaternion(0, 0, 0, 0);
         quaternion.setFromEuler(rotation, true);
-        let scale = new Vector3(scaleVal,scaleVal,scaleVal);
+        let scale = new Vector3(scaleVal, scaleVal, scaleVal);
         matrix.compose(position, quaternion, scale);
         return matrix;
+    }
+
+    private clearAll() {
+        if (this.golVisFloor !== undefined) {
+            this.remove(this.golVisFloor);
+        }
+        for (let y = 0; y < this.cells.length; y++) {
+            for (let x = 0; x < this.cells[y].length; x++) {
+                this.remove(this.cells[y][x]);
+            }
+        }
     }
 }

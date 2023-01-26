@@ -1,4 +1,4 @@
-import {Vector2} from "three";
+import {Vector2, Vector3} from "three";
 import {RLEPattern} from "./gol/RLEPattern";
 
 let resetSupporters: ResetSupport[] = [];
@@ -22,6 +22,21 @@ export class Settings {
             resetSupporters[i].reset();
         }
     }
+
+    /**
+     * matrix columns count
+     */
+    public columns: number = 10;
+
+    /**
+     * matric row count
+     */
+    public rows: number = 10;
+
+    /**
+     * cell side length
+     */
+    public cellLength: number = 0.1;
 
     /**
      * pattern x offset
@@ -107,6 +122,10 @@ export class Settings {
         offsetSupporters.forEach(value => value.updateOffset(new Vector2(this.xOffset, this.yOffset)));
     }
 
+    public updateDimensions() {
+        resetSupporters.forEach(value => value.reset(this.columns, this.rows));
+    }
+
     /**
      * loads asset selected RLE pattern file and prints the pattern to console
      * todo: make it usable
@@ -121,13 +140,20 @@ export class Settings {
                 }
             );
     }
+
+    public computeGolVisPosition(): Vector3 {
+        let position = new Vector3();
+        position.x = (this.columns * this.cellLength) / -2
+        position.z = (this.rows * this.cellLength) / -2
+        return position;
+    }
 }
 
 /**
  * Reset support
  */
 export interface ResetSupport {
-    reset(): void;
+    reset(columns?: number, rows?: number): void;
 }
 
 /**

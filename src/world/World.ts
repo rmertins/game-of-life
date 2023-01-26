@@ -83,7 +83,7 @@ export class World {
             "x = 9, y = 9, rule = B3/S23\n" +
             "b2o6b$o8b$bo3bo3b$bo3b2o2b$3bobo3b$2b2o3bob$3bo3bob$8bo$6b2o!");
         // gol = new GOL(pattern.columns, pattern.rows);
-        gol = new GOL(20, 20);
+        gol = new GOL(settings.columns, settings.rows);
         // gol = new GOL(50, 50);
         // let seeds = [        // blinker
         //     new Vector2(3,2),
@@ -126,8 +126,9 @@ export class World {
         // gol.seed(pattern.seed);
         gol.seed(seeds);
         golVis = new GOLVisualization(gol, settings);
-        // todo: should calculate the offset to place the board in center
-        golVis.position.set(-1, 0, -1);
+        // golVis.position.set(-0.5, 0, -0.5);
+        let golVisPosition = settings.computeGolVisPosition();
+        golVis.position.set(golVisPosition.x, golVisPosition.y, golVisPosition.z);
         settings.addResetSupporter(golVis);
         settings.addOffsetSupporter(golVis);
 
