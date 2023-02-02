@@ -20,11 +20,9 @@ import {GOLVisFloor} from "./GOLVisFloor";
 export class GOLVisualization extends Group implements Tickable, ResetSupport, OffsetSupport {
     private delay: number = 0.1;
     private pastTime: number = 0;
-    // private length: number = 0.1;
-    // todo: add setting for padding
-    private padding: number = 0.0;
     private population: GOL;
     private cells: GOLVisCell[][] = [];
+    private boxHelpers: BoxHelper[] = [];
     private settings: Settings;
     private floor?: Mesh;
     private headCrab?: Mesh;
@@ -111,33 +109,36 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
 
         const floorScale = this.settings.cellLength / this.floor?.userData['size'].x;
         const headCrabScale = this.settings.cellLength / this.headCrab?.userData['size'].y;
-        // this.headCrab?.scale.set(headCrabScale, headCrabScale, headCrabScale);
 
         let i = 0;
         for (let y = 0; y < this.population.rows; y++) {
             cells[y] = [];
             for (let x = 0; x < this.population.columns; x++) {
-                const xPos = this.settings.cellLength * x + this.padding * x;
+                const xPos = this.settings.cellLength * x + this.settings.padding * x;
                 const yPos = 0.1;
-                const zPos = this.settings.cellLength * y + this.padding * y;
+                const zPos = this.settings.cellLength * y + this.settings.padding * y;
 
                 cells[y][x] = new GOLVisCell(
                     headCrabScale,
+                    this.settings.cellLength,
                     this.headCrab?.clone(true)
                 );
                 cells[y][x].update(this.population.isCellAlive(y, x));
 
                 if (this.golVisFloor !== undefined) {
-                    const matrix = GOLVisualization.updateFloorMatrix(xPos, yPos, zPos, floorScale);
-                    this.golVisFloor.setMatrixAt(i, matrix);
+                    this.golVisFloor.updateMatrixAt(i, xPos, yPos, zPos, floorScale);
                 }
 
                 cells[y][x].position.set(xPos, yPos, zPos);
-                // todo: add setting to switch box helper on/off
-                // const boxHelper = new BoxHelper(cells[y][x], 0xff0000);
-
                 this.add(cells[y][x]);
-                // this.add(boxHelper);
+
+                if (this.settings.showBoxHelper) {
+                    // todo: figure out why they have the wrong position
+                    const boxHelper = new BoxHelper(cells[y][x], 0xff0000);
+                    this.add(boxHelper);
+                    this.boxHelpers.push(boxHelper);
+                }
+
                 i++;
             }
         }
@@ -158,17 +159,6 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
         }
     }
 
-    private static updateFloorMatrix(x: number, y: number, z: number, scaleVal: number): Matrix4 {
-        let matrix = new Matrix4();
-        let position = new Vector3(x, y, z);
-        let rotation = new Euler((Math.PI / 2) * -1, 0, 0);
-        let quaternion = new Quaternion(0, 0, 0, 0);
-        quaternion.setFromEuler(rotation, true);
-        let scale = new Vector3(scaleVal, scaleVal, scaleVal);
-        matrix.compose(position, quaternion, scale);
-        return matrix;
-    }
-
     private clearAll() {
         if (this.golVisFloor !== undefined) {
             this.remove(this.golVisFloor);
@@ -177,6 +167,11 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
             for (let x = 0; x < this.cells[y].length; x++) {
                 this.remove(this.cells[y][x]);
             }
+        }
+
+        if (this.settings.showBoxHelper) {
+            this.boxHelpers.forEach(boxHelper => this.remove(boxHelper));
+            this.boxHelpers = [];
         }
     }
 }

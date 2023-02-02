@@ -24,19 +24,29 @@ export class Settings {
     }
 
     /**
+     * indicates if box helpers are shown or not
+     */
+    public showBoxHelper: boolean = false;
+
+    /**
      * matrix columns count
      */
-    public columns: number = 10;
+    public columns: number = 100;
 
     /**
      * matric row count
      */
-    public rows: number = 10;
+    public rows: number = 100;
 
     /**
      * cell side length
      */
-    public cellLength: number = 0.1;
+    public cellLength: number = 0.05;
+
+    /**
+     * padding between the cells
+     */
+    public padding: number = 0.0;
 
     /**
      * pattern x offset

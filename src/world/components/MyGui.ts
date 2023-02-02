@@ -19,6 +19,9 @@ class MyGui extends GUI {
         const controlsFolder = this.addFolder("Controls");
         controlsFolder.add(settings, 'running');
         controlsFolder.add(settings, 'reset');
+        controlsFolder.add(settings, 'showBoxHelper').onChange(() => {
+            settings.updateDimensions();
+        });
         controlsFolder.add(settings, 'columns').onChange(() => {
             settings.updateDimensions();
         });
@@ -28,6 +31,9 @@ class MyGui extends GUI {
         controlsFolder.add(settings, 'cellLength').onChange(() => {
             settings.updateDimensions();
         });
+        controlsFolder.add(settings, 'padding').onChange(() => {
+            settings.updateDimensions();
+        }).step(0.01);
         controlsFolder.add(settings, 'xOffset').onChange(() => {
             settings.updateOffset();
         });

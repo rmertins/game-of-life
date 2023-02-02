@@ -123,6 +123,9 @@ export class World {
         //     new Vector2(1, 6),
         //     new Vector2(2, 6)
         // ];
+        // let seeds = [           // Single Cell
+        //     new Vector2(0, 0)
+        // ];
         // gol.seed(pattern.seed);
         gol.seed(seeds);
         golVis = new GOLVisualization(gol, settings);

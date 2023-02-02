@@ -41,7 +41,6 @@ class GOL implements Tickable {
     }
 
     public reset(columns?: number, rows?: number) {
-        console.log([ {'columns': columns},{ 'rows': rows}]);
         if (columns !== undefined && rows !== undefined) {
             this.columns = columns;
             this.rows = rows;
