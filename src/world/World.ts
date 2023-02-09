@@ -97,7 +97,7 @@ export class World {
         //     new Vector2(4,2),
         //     new Vector2(4,3)
         // ];
-        let seeds = [           // F-Pentomino
+        let seedsFPentomino = [           // F-Pentomino
             new Vector2(0, 1),
             new Vector2(0, 2),
             new Vector2(1, 0),
@@ -123,11 +123,11 @@ export class World {
         //     new Vector2(1, 6),
         //     new Vector2(2, 6)
         // ];
-        // let seeds = [           // Single Cell
-        //     new Vector2(0, 0)
-        // ];
+        let seedsSingle = [           // Single Cell
+            new Vector2(0, 0)
+        ];
         // gol.seed(pattern.seed);
-        gol.seed(seeds);
+        gol.seed(seedsFPentomino);
         golVis = new GOLVisualization(gol, settings);
         // golVis.position.set(-0.5, 0, -0.5);
         let golVisPosition = settings.computeGolVisPosition();

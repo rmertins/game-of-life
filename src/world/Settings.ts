@@ -31,17 +31,17 @@ export class Settings {
     /**
      * matrix columns count
      */
-    public columns: number = 100;
+    public columns: number = 200;
 
     /**
      * matric row count
      */
-    public rows: number = 100;
+    public rows: number = 200;
 
     /**
      * cell side length
      */
-    public cellLength: number = 0.05;
+    public cellLength: number = 0.01;
 
     /**
      * padding between the cells
@@ -153,9 +153,18 @@ export class Settings {
 
     public computeGolVisPosition(): Vector3 {
         let position = new Vector3();
-        position.x = (this.columns * this.cellLength) / -2
-        position.z = (this.rows * this.cellLength) / -2
+        position.x = (this.columns * this.cellLength + this.columns * this.padding) / -2
+        position.z = (this.rows * this.cellLength + this.rows * this.padding) / -2
+        position.y = 0;
         return position;
+    }
+
+    public computeGolVisDimensions(): Vector3 {
+        let dimensons = new Vector3();
+        dimensons.x = this.columns * this.cellLength + this.columns * this.padding;
+        dimensons.z = this.rows * this.cellLength + this.rows * this.padding;
+        dimensons.y = 0;
+        return dimensons;
     }
 }
 
