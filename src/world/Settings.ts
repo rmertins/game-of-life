@@ -31,12 +31,12 @@ export class Settings {
     /**
      * matrix columns count
      */
-    public columns: number = 200;
+    public columns: number = 100;
 
     /**
      * matric row count
      */
-    public rows: number = 200;
+    public rows: number = 100;
 
     /**
      * cell side length
@@ -46,9 +46,10 @@ export class Settings {
     /**
      * padding between the cells
      */
-    public padding: number = 0.0;
+    public padding: number = 0.00;
 
     /**
+     * todo: pre set offset not working
      * pattern x offset
      */
     public xOffset: number = 0;

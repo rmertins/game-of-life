@@ -1,4 +1,5 @@
 import {
+    Box3,
     Box3Helper, BoxHelper,
     Euler,
     Group,
@@ -97,7 +98,7 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
             this.clearAll();
             this.cells = this.initCells();
             const newPos = this.settings.computeGolVisPosition();
-            this.position.set(newPos.x, newPos.y, newPos.z);
+            // this.position.set(newPos.x, newPos.y, newPos.z);
         }
     }
 
@@ -113,9 +114,17 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
 
     private initCells(): GOLVisCell[][] {
         let cells: GOLVisCell[][] = [];
-
+        const dimension = this.settings.computeGolVisDimensions();
+        let posY = 0.0;
         if (this.floor !== undefined) {
-            this.golVisFloor = new GOLVisFloor(this.floor, this.population.rows * this.population.columns);
+            let hasTable = 0;
+
+            if (this.table !== undefined) {
+                hasTable = 1;
+                posY = (Math.max(dimension.x, dimension.z) / 3)
+            }
+
+            this.golVisFloor = new GOLVisFloor(this.floor, (this.population.rows * this.population.columns) + hasTable);
         }
 
         const floorScale = this.settings.cellLength / this.floor?.userData['size'].x;
@@ -126,7 +135,7 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
             cells[y] = [];
             for (let x = 0; x < this.population.columns; x++) {
                 const xPos = this.settings.cellLength * x + this.settings.padding * x;
-                const yPos = 0.0;
+                const yPos = posY;
                 const zPos = this.settings.cellLength * y + this.settings.padding * y;
 
                 cells[y][x] = new GOLVisCell(
@@ -137,7 +146,7 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
                 cells[y][x].update(this.population.isCellAlive(y, x));
 
                 if (this.golVisFloor !== undefined) {
-                    this.golVisFloor.updateMatrixAt(i, xPos, yPos, zPos, floorScale);
+                    this.golVisFloor.updateMatrixAt(i, xPos, 0.0, zPos, floorScale);
                 }
 
                 cells[y][x].position.set(xPos, yPos, zPos);
@@ -147,23 +156,20 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
         }
 
         if (this.golVisFloor !== undefined) {
+            if (this.table != null) {
+                this.golVisFloor.addTable(
+                    this.table,
+                    dimension,
+                    this.settings.cellLength
+                );
+            }
             this.golVisFloor.updateMatrix();
             this.add(this.golVisFloor);
         }
 
-        if (this.table != null) {
-            // console.log(this.settings.computeGolVisDimensions());
-            console.log(this.table.userData['size']);
-            const dimensions = this.settings.computeGolVisDimensions();
-            const scaleX = dimensions.x / this.table.userData['size'].x;
-            const scaleZ = dimensions.z / this.table.userData['size'].z;
-            console.log(scaleX, scaleZ)
-            this.table.scale.set(scaleX, scaleX, scaleZ);
-            const position = this.settings.computeGolVisPosition();
-            this.table.position.set(-position.x, -position.y, -position.z);
-            // console.log(this.table);
-            // this.add(this.table);
-        }
+        let box = new Box3();
+        box.expandByObject(this, false);
+        console.log(box.getSize(new Vector3()));
 
         return cells;
     }

@@ -1,4 +1,4 @@
-import {Scene, TextureLoader, Vector2, WebGLRenderer} from "three";
+import {DirectionalLightHelper, Scene, TextureLoader, Vector2, WebGLRenderer} from "three";
 import {createCamera, TickablePerspectiveCamera} from "./components/camera";
 import {createScene} from "./components/scene";
 import {createRenderer} from "./systems/renderer";
@@ -104,38 +104,37 @@ export class World {
             new Vector2(1, 1),
             new Vector2(2, 1)
         ];
-        // let seeds = [        // double brackets
-        //     new Vector2(0, 0),
-        //     new Vector2(1, 0),
-        //     new Vector2(2, 0),
-        //
-        //     new Vector2(0, 1),
-        //     new Vector2(2, 1),
-        //     new Vector2(0, 2),
-        //     new Vector2(2, 2),
-        //
-        //     new Vector2(0, 4),
-        //     new Vector2(2, 4),
-        //     new Vector2(0, 5),
-        //     new Vector2(2, 5),
-        //
-        //     new Vector2(0, 6),
-        //     new Vector2(1, 6),
-        //     new Vector2(2, 6)
-        // ];
+        let seedsDoubleBracket = [        // double brackets
+            new Vector2(0, 0),
+            new Vector2(1, 0),
+            new Vector2(2, 0),
+
+            new Vector2(0, 1),
+            new Vector2(2, 1),
+            new Vector2(0, 2),
+            new Vector2(2, 2),
+
+            new Vector2(0, 4),
+            new Vector2(2, 4),
+            new Vector2(0, 5),
+            new Vector2(2, 5),
+
+            new Vector2(0, 6),
+            new Vector2(1, 6),
+            new Vector2(2, 6)
+        ];
         let seedsSingle = [           // Single Cell
             new Vector2(0, 0)
         ];
-        // gol.seed(pattern.seed);
-        gol.seed(seedsFPentomino);
+        gol.seed(seedsDoubleBracket);
         golVis = new GOLVisualization(gol, settings);
-        // golVis.position.set(-0.5, 0, -0.5);
-        let golVisPosition = settings.computeGolVisPosition();
-        golVis.position.set(golVisPosition.x, golVisPosition.y, golVisPosition.z);
         settings.addResetSupporter(golVis);
         settings.addOffsetSupporter(golVis);
 
         const {light, ambientLight} = createLights();
+
+        const lightHlpr = new DirectionalLightHelper(light, 1, 'red');
+        light.target = golVis;
 
         loop.updatables.push(controls, camera, light, golVis);
         scene.add(light, ambientLight, createGridHelper(), createAxesHelper(), golVis);
