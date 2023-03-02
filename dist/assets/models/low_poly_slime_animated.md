@@ -1,0 +1,1 @@
+# "Low Poly Slime Animated" (https://skfb.ly/UPnr) by Pascal T. Monette is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).

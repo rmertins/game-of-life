@@ -1,4 +1,4 @@
-import {GOLCell} from "./GOLCell";
+import {GOLCell, LastTransition} from "./GOLCell";
 import {Vector2} from "three";
 import {Tickable} from "../systems/Loop";
 
@@ -164,6 +164,10 @@ class GOL implements Tickable {
 
     public isCellAlive(row: number, column: number): boolean {
         return this.cells[row][column].alive;
+    }
+
+    public cellLastTransition(row: number, column: number): LastTransition {
+        return this.cells[row][column].lastTransition;
     }
 
     public get offset(): Vector2 {

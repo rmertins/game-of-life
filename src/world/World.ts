@@ -63,6 +63,7 @@ let settings: Settings = new Settings();
  */
 let myGUI: MyGui;
 
+
 /**
  * The wohle world handles everything
  */
@@ -85,11 +86,11 @@ export class World {
         // gol = new GOL(pattern.columns, pattern.rows);
         gol = new GOL(settings.columns, settings.rows);
         // gol = new GOL(50, 50);
-        // let seeds = [        // blinker
-        //     new Vector2(3,2),
-        //     new Vector2(3,3),
-        //     new Vector2(3,4)
-        // ];
+        let seedsBlinker = [        // blinker
+            new Vector2(3,2),
+            new Vector2(3,3),
+            new Vector2(3,4)
+        ];
         // let seeds = [           // gleiter 1
         //     new Vector2(2,2),
         //     new Vector2(3,3),
@@ -142,6 +143,7 @@ export class World {
         myGUI = new MyGui(settings, camera);
 
         container.append(renderer.domElement);
+
         /*container.onclick = function () {
             fetch("assets/patterns/boat.rle")
                 .then(

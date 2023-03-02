@@ -1,4 +1,6 @@
 import {
+    AnimationAction, AnimationClip,
+    AnimationMixer,
     Box3,
     Box3Helper, BoxHelper,
     Euler,
@@ -6,8 +8,8 @@ import {
     Material,
     Matrix4,
     Mesh,
-    MeshBasicMaterial,
-    Quaternion,
+    MeshBasicMaterial, Object3D,
+    Quaternion, SkeletonHelper,
     Vector2,
     Vector3
 } from "three";
@@ -17,6 +19,7 @@ import {OffsetSupport, ResetSupport, Settings} from "../Settings";
 import {GOLVisCell} from "./GOLVisCell";
 import {GLTF, GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 import {GOLVisFloor} from "./GOLVisFloor";
+import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 export class GOLVisualization extends Group implements Tickable, ResetSupport, OffsetSupport {
     private delay: number = 0.1;
@@ -25,9 +28,10 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
     private cells: GOLVisCell[][] = [];
     private readonly settings: Settings;
     private floor?: Mesh;
-    private headCrab?: Mesh;
+    private bee?: Object3D;
     private table?: Mesh;
     private golVisFloor?: GOLVisFloor;
+    private beeAnimations: AnimationClip[] = [];
 
     constructor(population: GOL, settings: Settings) {
         super();
@@ -40,17 +44,16 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
 
         const [
             floorData,
-            headCrabData,
-            tableData
+            tableData,
+            beeData
         ] = await Promise.all([
             loader.loadAsync('/assets/models/star_tile_floor.glb'),
-            loader.loadAsync('/assets/models/headcrab.glb'),
-            loader.loadAsync('/assets/models/wooden_center_table.glb')
+            loader.loadAsync('/assets/models/wooden_center_table.glb'),
+            loader.loadAsync('/assets/models/bee.glb')
         ]);
 
-
         this.floor = GOLVisualization.setupModel(floorData);
-        this.headCrab = GOLVisualization.setupModel(headCrabData);
+        this.bee = beeData.scene.children[0].children[0].children[0];
         this.table = GOLVisualization.setupModel(tableData);
 
         if (this.floor) {
@@ -59,10 +62,13 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
             this.floor.geometry.boundingBox?.getSize(this.floor.userData['size']);
         }
 
-        if (this.headCrab) {
+        if (this.bee) {
             // todo: refactor into GOLCellVis class
-            this.headCrab.userData['size'] = new Vector3();
-            this.headCrab.geometry.boundingBox?.getSize(this.headCrab.userData['size']);
+            this.bee.userData['size'] = new Vector3();
+            const beeBox = new Box3();
+            beeBox.expandByObject(this.bee);
+            beeBox.getSize(this.bee.userData['size']);
+            this.beeAnimations = beeData.animations;
         }
 
         if (this.table != null) {
@@ -105,6 +111,8 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
     tick(delta: number): void {
         this.pastTime += delta;
 
+        this.updateCellsAnimation(delta);
+
         if (this.settings.running && this.pastTime >= this.delay) {
             this.population.tick(delta);
             this.updateCells();
@@ -128,7 +136,11 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
         }
 
         const floorScale = this.settings.cellLength / this.floor?.userData['size'].x;
-        const headCrabScale = this.settings.cellLength / this.headCrab?.userData['size'].y;
+        const beeScale = this.settings.cellLength / Math.max(
+            this.bee?.userData['size'].x,
+            this.bee?.userData['size'].y,
+            this.bee?.userData['size'].z
+        );
 
         let i = 0;
         for (let y = 0; y < this.population.rows; y++) {
@@ -139,11 +151,12 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
                 const zPos = this.settings.cellLength * y + this.settings.padding * y;
 
                 cells[y][x] = new GOLVisCell(
-                    headCrabScale,
+                    beeScale,
                     this.settings,
-                    this.headCrab?.clone(true)
+                    (this.bee) ? SkeletonUtils.clone( this.bee) : undefined,
+                    (this.beeAnimations.length > 0) ? this.beeAnimations[0] : undefined
                 );
-                cells[y][x].update(this.population.isCellAlive(y, x));
+                cells[y][x].update(this.population.isCellAlive(y, x), this.population.cellLastTransition(y, x));
 
                 if (this.golVisFloor !== undefined) {
                     this.golVisFloor.updateMatrixAt(i, xPos, 0.0, zPos, floorScale);
@@ -163,13 +176,8 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
                     this.settings.cellLength
                 );
             }
-            this.golVisFloor.updateMatrix();
             this.add(this.golVisFloor);
         }
-
-        let box = new Box3();
-        box.expandByObject(this, false);
-        console.log(box.getSize(new Vector3()));
 
         return cells;
     }
@@ -177,7 +185,7 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
     private updateCells() {
         for (let y = 0; y < this.population.rows; y++) {
             for (let x = 0; x < this.population.columns; x++) {
-                this.cells[y][x].update(this.population.isCellAlive(y, x));
+                this.cells[y][x].update(this.population.isCellAlive(y, x), this.population.cellLastTransition(y, x));
             }
         }
     }
@@ -192,6 +200,14 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
         for (let y = 0; y < this.cells.length; y++) {
             for (let x = 0; x < this.cells[y].length; x++) {
                 this.remove(this.cells[y][x]);
+            }
+        }
+    }
+
+    private updateCellsAnimation(delta: number) {
+        for (let y = 0; y < this.cells.length; y++) {
+            for (let x = 0; x < this.cells[y].length; x++) {
+                this.cells[y][x].updateAnimations(delta);
             }
         }
     }

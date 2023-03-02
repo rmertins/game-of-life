@@ -1,9 +1,16 @@
 import {Vector2} from "three";
 import {GOL} from "./GOL";
 
-class GOLCell {
+export enum LastTransition {
+    SPAWNED,
+    DIED,
+    IDLE,
+}
+
+export class GOLCell {
     public alive: boolean = false;
     public position: Vector2;
+    public lastTransition: LastTransition = LastTransition.IDLE;
     private readonly population: GOL;
 
 
@@ -19,22 +26,24 @@ class GOLCell {
 
         if (!this.alive && aliveNeighbours == this.population.max) {
             newCell.alive = true;
+            this.lastTransition = LastTransition.SPAWNED;
         }
 
         if (this.alive && aliveNeighbours < this.population.min) {
             newCell.alive = false;
+            this.lastTransition = LastTransition.DIED;
         }
 
         if (this.alive && aliveNeighbours >= this.population.min && aliveNeighbours <= this.population.max) {
+            this.lastTransition = LastTransition.IDLE;
             return newCell;
         }
 
         if (this.alive && aliveNeighbours > this.population.max) {
+            this.lastTransition = LastTransition.DIED;
             newCell.alive = false;
         }
 
         return newCell;
     }
 }
-
-export { GOLCell };

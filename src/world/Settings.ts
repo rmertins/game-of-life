@@ -17,7 +17,6 @@ export class Settings {
      * reset the game
      */
     public reset = function () {
-        console.log("RESET!!!");
         for (let i = 0; i < resetSupporters.length; i++) {
             resetSupporters[i].reset();
         }
@@ -31,17 +30,17 @@ export class Settings {
     /**
      * matrix columns count
      */
-    public columns: number = 100;
+    public columns: number = 50;
 
     /**
      * matric row count
      */
-    public rows: number = 100;
+    public rows: number = 50;
 
     /**
      * cell side length
      */
-    public cellLength: number = 0.01;
+    public cellLength: number = 0.025;
 
     /**
      * padding between the cells
