@@ -1,6 +1,8 @@
 import {Clock, PerspectiveCamera, Scene, WebGLRenderer} from "three";
+import Stats from 'three/examples/jsm/libs/stats.module'
 
 const clock = new Clock();
+let stats: Stats;
 
 class Loop {
     private readonly camera: PerspectiveCamera;
@@ -13,12 +15,16 @@ class Loop {
         this.scene = scene;
         this.renderer = renderer;
         this.updatables = [];
+
+        stats = Stats()
+        document.body.appendChild(stats.dom)
     }
 
     start() {
         this.renderer.setAnimationLoop(() => {
             this.tick();
             this.renderer.render(this.scene, this.camera);
+            stats.update();
         });
     }
 
@@ -28,7 +34,6 @@ class Loop {
 
     tick() {
         const delta = clock.getDelta();
-
         for (const tickable of this.updatables) {
             tickable.tick(delta);
         }
