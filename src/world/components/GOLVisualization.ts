@@ -1,6 +1,7 @@
 import {
     AnimationAction, AnimationClip,
     AnimationMixer,
+    Event,
     Box3,
     Box3Helper, BoxHelper,
     Euler,
@@ -20,9 +21,10 @@ import {GOLVisCell} from "./GOLVisCell";
 import {GLTF, GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 import {GOLVisFloor} from "./GOLVisFloor";
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
+import {EventListener} from "three/src/core/EventDispatcher";
 
 export class GOLVisualization extends Group implements Tickable, ResetSupport, OffsetSupport {
-    private delay: number = 0.1;
+    private delay: number = 5.0;
     private pastTime: number = 0;
     private population: GOL;
     private cells: GOLVisCell[][] = [];
@@ -32,11 +34,15 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
     private table?: Mesh;
     private golVisFloor?: GOLVisFloor;
     private beeAnimations: AnimationClip[] = [];
+    private onNextStep: EventListener<Event, string, Settings> = (event: Event) => {
+        this.populationNextStep(0);
+    };
 
     constructor(population: GOL, settings: Settings) {
         super();
         this.population = population;
         this.settings = settings;
+        this.settings.addEventListener(Settings.EVENT_GOL_NEXT_STEP, this.onNextStep);
     }
 
     public async init() {
@@ -69,6 +75,7 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
             beeBox.expandByObject(this.bee);
             beeBox.getSize(this.bee.userData['size']);
             this.beeAnimations = beeData.animations;
+            // console.table(this.beeAnimations);
         }
 
         if (this.table != null) {
@@ -114,10 +121,14 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
         this.updateCellsAnimation(delta);
 
         if (this.settings.running && this.pastTime >= this.delay) {
-            this.population.tick(delta);
-            this.updateCells();
+            this.populationNextStep(delta);
             this.pastTime = 0;
         }
+    }
+
+    private populationNextStep(delta: number) {
+        this.population.tick(delta);
+        this.updateCells();
     }
 
     private initCells(): GOLVisCell[][] {
@@ -154,7 +165,8 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
                     beeScale,
                     this.settings,
                     (this.bee) ? SkeletonUtils.clone( this.bee) : undefined,
-                    (this.beeAnimations.length > 0) ? this.beeAnimations[0] : undefined
+                    (this.beeAnimations.length > 0) ? this.beeAnimations[0] : undefined,
+                    (this.beeAnimations.length > 2) ? this.beeAnimations[2] : undefined,
                 );
                 cells[y][x].update(this.population.isCellAlive(y, x), this.population.cellLastTransition(y, x));
 
@@ -211,4 +223,5 @@ export class GOLVisualization extends Group implements Tickable, ResetSupport, O
             }
         }
     }
+
 }

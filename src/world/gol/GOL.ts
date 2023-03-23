@@ -37,6 +37,7 @@ class GOL implements Tickable {
         for (let i = 0; i < seeds.length; i++) {
             seeds[i].add(this._offset);
             this.cells[seeds[i].y][seeds[i].x].alive = true;
+            this.cells[seeds[i].y][seeds[i].x].lastTransition = LastTransition.SPAWNED;
         }
     }
 
@@ -62,8 +63,8 @@ class GOL implements Tickable {
 
     /**
      * _|_|_      edge = row = 0 || row = row -1 || col = 0 || col = col -1
-     * _|_|_
-     * x| |
+     * _|_|X
+     *  | |
      *
      * pos = 2,0
      * todo: refactor only watch edges and use edge case accessible fields
@@ -124,9 +125,10 @@ class GOL implements Tickable {
             return alive;
         }
 
-        // center right
+        // center right Allowed: row -1 & col -1 & row + 1
         if (position.y > 0 && position.y < this.rows-1 && position.x == this.columns-1) {
             alive += this.cells[position.y-1][position.x].alive ? 1 : 0;  // one up
+            alive += this.cells[position.y-1][position.x-1].alive ? 1 : 0;  // one up on left
             alive += this.cells[position.y+1][position.x].alive ? 1 : 0;  // one down
             alive += this.cells[position.y+1][position.x-1].alive ? 1 : 0;  // one left one down
             alive += this.cells[position.y][position.x-1].alive ? 1 : 0;    // one left

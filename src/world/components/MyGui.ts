@@ -19,6 +19,7 @@ class MyGui extends GUI {
         const controlsFolder = this.addFolder("Controls");
         controlsFolder.add(settings, 'running');
         controlsFolder.add(settings, 'reset');
+        controlsFolder.add(settings, 'nextStep');
         controlsFolder.add(settings, 'showBoxHelper').onChange(() => {
             settings.updateDimensions();
         });

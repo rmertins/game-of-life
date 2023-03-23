@@ -1,4 +1,13 @@
-import {AnimationAction, AnimationClip, AnimationMixer, AnimationUtils, BoxHelper, Group, Object3D} from "three";
+import {
+    AnimationAction,
+    AnimationClip,
+    AnimationMixer,
+    AnimationUtils,
+    BoxHelper,
+    Group,
+    LoopOnce,
+    Object3D
+} from "three";
 import {Settings} from "../Settings";
 import {LastTransition} from "../gol/GOLCell";
 
@@ -26,6 +35,8 @@ export class GOLVisCell extends Group {
     private readonly zOffset: number = 0.40;   // cellLength = 1
     private readonly yOffset: number = 0.4;
 
+    private currentTransition: LastTransition = LastTransition.IDLE;
+
     /**
      * creates the cell by scaling, placing and rotating the model
      * @param scale cell scaling factor
@@ -47,6 +58,8 @@ export class GOLVisCell extends Group {
 
         if (this.aniSpawnAndDieClip != null) {
             this.aniDieClip = AnimationUtils.subclip(this.aniSpawnAndDieClip, "die", 0, 137);
+            this.aniDieClip.tracks.shift();
+            console.log(this.aniDieClip);
             this.aniSpawnClip = AnimationUtils.subclip(
                 this.aniSpawnAndDieClip,
                 "spawn",
@@ -71,12 +84,8 @@ export class GOLVisCell extends Group {
             this.mixer = new AnimationMixer(this.bee);
             if (this.aniIdleClip != null) {
                 this.aniCurrentAction = this.mixer.clipAction(this.aniIdleClip);
+                this.currentTransition = LastTransition.IDLE;
             }
-            // if (this.aniDieClip != null) {
-            //     this.aniCurrentAction = this.mixer.clipAction(this.aniDieClip);
-            //     this.aniCurrentAction.setDuration(5)
-            //     this.aniCurrentAction.play();
-            // }
 
             this.add(this.bee);
 
@@ -93,32 +102,22 @@ export class GOLVisCell extends Group {
      * @param lastTransition
      */
     public update(alive: boolean, lastTransition: LastTransition): void {
-        switch (lastTransition) {
-            case LastTransition.IDLE:
-                if (this.aniIdleClip != null) {
-                    this.aniCurrentAction = this.mixer?.clipAction(this.aniIdleClip);
-                }
-                break;
-            case LastTransition.SPAWNED:
-                if (this.aniSpawnClip != null) {
-                    this.aniCurrentAction = this.mixer?.clipAction(this.aniSpawnClip);
-                }
-                break;
-            case LastTransition.DIED:
-                if (this.aniDieClip != null) {
-                    this.aniCurrentAction = this.mixer?.clipAction(this.aniDieClip);
-                }
-                break;
-        }
-
-        if (this.bee != null) {
-            this.bee.visible = alive;
-            if (alive) {
-                this.aniCurrentAction?.play();
-            } else {
-                this.aniCurrentAction?.stop();
+        if (this.currentTransition != lastTransition) {
+            switch (lastTransition) {
+                case LastTransition.SPAWNED:
+                    this.spawn();
+                    break;
+                case LastTransition.DIED:
+                    this.died();
+                    break;
+                case LastTransition.IDLE:
+                    if (this.bee != null) {
+                        this.bee.visible = alive;
+                    }
+                    break;
             }
         }
+
         if (this.boxHelper != null) {
             this.boxHelper.visible = this.settings.showBoxHelper;
         }
@@ -126,5 +125,57 @@ export class GOLVisCell extends Group {
 
     public updateAnimations(delta: number): void {
         this.mixer?.update(delta);
+        // console.log(this.aniCurrentAction?.isRunning());
+        if (this.currentTransition == LastTransition.SPAWNED && !this.aniCurrentAction?.isRunning()) {
+            this.idle();
+        }
+
+        if (this.currentTransition == LastTransition.DIED && !this.aniCurrentAction?.isRunning()) {
+            if (this.bee) {
+                this.bee.visible = false;
+            }
+        }
+    }
+
+    private spawn(): void {
+        if (this.bee) {
+            this.bee.visible = true;
+        }
+
+        if (this.aniSpawnClip) {
+            this.aniCurrentAction = this.mixer?.clipAction(this.aniSpawnClip);
+            this.aniCurrentAction?.setLoop(LoopOnce, 1);
+            this.aniCurrentAction?.reset();
+            this.aniCurrentAction?.play();
+        }
+
+        this.currentTransition = LastTransition.SPAWNED;
+    }
+
+    private idle() {
+
+        let lastAction;
+        if (this.aniCurrentAction) {
+            lastAction = this.aniCurrentAction;
+        }
+
+        if (this.aniIdleClip) {
+            this.aniCurrentAction = this.mixer?.clipAction(this.aniIdleClip);
+            this.aniCurrentAction?.reset();
+            this.aniCurrentAction?.play();
+        }
+
+        this.currentTransition = LastTransition.IDLE;
+    }
+
+    private died() {
+        if (this.aniDieClip) {
+            this.aniCurrentAction = this.mixer?.clipAction(this.aniDieClip);
+            this.aniCurrentAction?.setLoop(LoopOnce, 1);
+            this.aniCurrentAction?.reset();
+            this.aniCurrentAction?.play();
+        }
+
+        this.currentTransition = LastTransition.DIED;
     }
 }

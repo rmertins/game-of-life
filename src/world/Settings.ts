@@ -1,4 +1,4 @@
-import {Vector2, Vector3} from "three";
+import {EventDispatcher, Vector2, Vector3} from "three";
 import {RLEPattern} from "./gol/RLEPattern";
 
 let resetSupporters: ResetSupport[] = [];
@@ -7,7 +7,10 @@ let offsetSupporters: OffsetSupport[] = [];
 /**
  * global game settings
  */
-export class Settings {
+export class Settings extends EventDispatcher {
+
+    public static readonly EVENT_GOL_NEXT_STEP: string = "GOLNextStep";
+
     /**
      * flag indicating running simulation
      */
@@ -22,6 +25,11 @@ export class Settings {
         }
     }
 
+    public nextStep = () => {
+        console.log("Next step");
+        this.dispatchEvent( { type: Settings.EVENT_GOL_NEXT_STEP } );
+    }
+
     /**
      * indicates if box helpers are shown or not
      */
@@ -30,17 +38,17 @@ export class Settings {
     /**
      * matrix columns count
      */
-    public columns: number = 50;
+    public columns: number = 12;
 
     /**
      * matric row count
      */
-    public rows: number = 50;
+    public rows: number = 12;
 
     /**
      * cell side length
      */
-    public cellLength: number = 0.025;
+    public cellLength: number = 0.05;
 
     /**
      * padding between the cells

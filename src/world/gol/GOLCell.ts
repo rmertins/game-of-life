@@ -26,24 +26,25 @@ export class GOLCell {
 
         if (!this.alive && aliveNeighbours == this.population.max) {
             newCell.alive = true;
-            this.lastTransition = LastTransition.SPAWNED;
+            newCell.lastTransition = LastTransition.SPAWNED;
         }
 
         if (this.alive && aliveNeighbours < this.population.min) {
             newCell.alive = false;
-            this.lastTransition = LastTransition.DIED;
+            newCell.lastTransition = LastTransition.DIED;
         }
 
         if (this.alive && aliveNeighbours >= this.population.min && aliveNeighbours <= this.population.max) {
-            this.lastTransition = LastTransition.IDLE;
             return newCell;
         }
 
         if (this.alive && aliveNeighbours > this.population.max) {
-            this.lastTransition = LastTransition.DIED;
             newCell.alive = false;
+            newCell.lastTransition = LastTransition.DIED;
         }
 
         return newCell;
     }
+
+
 }
